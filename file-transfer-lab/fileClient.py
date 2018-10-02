@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-import sys, re, socket
+import sys, re, socket, codecs
 sys.path.append("../lib") #for params
 import params
 
@@ -47,3 +47,32 @@ for res in socket.getaddrinfo(serverHost, serverPort, socket.AF_UNSPEC, socket.S
 if s is None:
     print('could not open socket')
     sys.exit(1)
+
+
+
+file = input("Enter file name")
+with open(file, 'rb') as fp:
+  outMessage= fp.read()
+
+while len(outMessage):
+    print("sending '%s'" % file)
+    bytesSent = s.send(outMessage.encode())
+    outMessage = outMessage[bytesSent:]
+
+data = s.recv(1024).decode()
+print("Received '%s'" % data)
+
+while len(outMessage):
+    print("sending '%s'" % file)
+    bytesSent = s.send(outMessage.encode())
+    outMessage = outMessage[bytesSent:]
+
+s.shutdown(socket.SHUT_WR)  # no more output
+
+while 1:
+    data = s.recv(1024).decode()
+    print("Received '%s'" % data)
+    if len(data) == 0:
+        break
+print("Zero length read.  Closing")
+s.close()
