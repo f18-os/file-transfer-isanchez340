@@ -51,6 +51,8 @@ if s is None:
 
 file = input("Enter file name ")
 
+s.send(file.encode())
+
 outfile = open(file, 'rb')
 
 sending = outfile.read(1024)

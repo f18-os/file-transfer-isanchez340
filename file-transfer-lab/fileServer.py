@@ -14,8 +14,6 @@ switchesVarDefaults = (
 progname = "fileserver"
 paramMap = params.parseParams(switchesVarDefaults)
 
-f = open('testR.m4a','wb')
-
 listenPort = paramMap['listenPort']
 listenAddr = ''       # Symbolic name meaning all available interfaces
 
@@ -29,11 +27,15 @@ s.listen(1)              # allow only one outstanding request
 
 conn, addr = s.accept()  # wait until incoming connection request (and accept it)
 print('Connected by', addr)
+filename = conn.recv(1024).decode()
+f = open("Received_" + filename,'wb')
+
 file = conn.recv(1024)
 while file:
-        print("Receiving ")
+        print("Receiving " + filename)
         f.write(file)
         file = conn.recv(1024)
 
+print("Received " + filename)
 conn.shutdown(socket.SHUT_WR)
 conn.close()
