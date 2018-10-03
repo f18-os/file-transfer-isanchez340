@@ -1,15 +1,16 @@
 #! /usr/bin/env python3
 
-import sys, re, socket, codecs
-sys.path.append("../lib") #for params
+# Echo client program
+import socket, sys, re
+sys.path.append("../lib")       # for params
 import params
 
 switchesVarDefaults = (
-    (('-l', '--listenPort') ,'listenPort', 50001),
+    (('-s', '--server'), 'server', "127.0.0.1:50001"),
     (('-?', '--usage'), "usage", False), # boolean (set if present)
     )
 
-progname = "fileClient"
+progname = "framedClient"
 paramMap = params.parseParams(switchesVarDefaults)
 
 server, usage  = paramMap["server"], paramMap["usage"]
@@ -48,31 +49,15 @@ if s is None:
     print('could not open socket')
     sys.exit(1)
 
+file = input("Enter file name ")
 
+outfile = open(file, 'rb')
 
-file = input("Enter file name")
-with open(file, 'rb') as fp:
-  outMessage= fp.read()
-
-while len(outMessage):
+sending = outfile.read(1024)
+while len(sending):
     print("sending '%s'" % file)
-    bytesSent = s.send(outMessage.encode())
-    outMessage = outMessage[bytesSent:]
-
-data = s.recv(1024).decode()
-print("Received '%s'" % data)
-
-while len(outMessage):
-    print("sending '%s'" % file)
-    bytesSent = s.send(outMessage.encode())
-    outMessage = outMessage[bytesSent:]
+    s.send(sending)
+    sending = outfile.read(1024)
 
 s.shutdown(socket.SHUT_WR)  # no more output
-
-while 1:
-    data = s.recv(1024).decode()
-    print("Received '%s'" % data)
-    if len(data) == 0:
-        break
-print("Zero length read.  Closing")
 s.close()
