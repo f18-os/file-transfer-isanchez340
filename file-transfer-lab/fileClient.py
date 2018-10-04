@@ -51,9 +51,16 @@ if s is None:
 
 file = input("Enter file name ")
 
-s.send(file.encode())
+try:
+    outfile = open(file, 'rb')
+except:
+    print("file not found")
+    s.send("nullerrorfilenotfound".encode())
+    s.shutdown(socket.SHUT_WR)
+    s.close()
+    sys.exit(0)
 
-outfile = open(file, 'rb')
+s.send(file.encode())
 
 sending = outfile.read(1024)
 while len(sending):
@@ -61,5 +68,6 @@ while len(sending):
     s.send(sending)
     sending = outfile.read(1024)
 
+print("sent '%s'" % file)
 s.shutdown(socket.SHUT_WR)  # no more output
 s.close()

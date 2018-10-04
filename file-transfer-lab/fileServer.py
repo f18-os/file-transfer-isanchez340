@@ -2,10 +2,11 @@
 
 # Echo server program
 
-import socket, sys, re
+import socket, sys, re, os
 sys.path.append("../lib")       # for params
 import params
 
+nofileerror = 0;
 switchesVarDefaults = (
     (('-l', '--listenPort') ,'listenPort', 50001),
     (('-?', '--usage'), "usage", False), # boolean (set if present)
@@ -28,14 +29,21 @@ s.listen(1)              # allow only one outstanding request
 conn, addr = s.accept()  # wait until incoming connection request (and accept it)
 print('Connected by', addr)
 filename = conn.recv(1024).decode()
+
+if filename == "nullerrorfilenotfound":
+    nofileerror = 1
+
 f = open("Received_" + filename,'wb')
 
 file = conn.recv(1024)
 while file:
-        print("Receiving " + filename)
+        print("Receiving '%s'" % filename)
         f.write(file)
         file = conn.recv(1024)
 
-print("Received " + filename)
+print("Received '%s'" % filename)
 conn.shutdown(socket.SHUT_WR)
 conn.close()
+if nofileerror:
+    os.remove("Received_nullerrorfilenotfound")
+    os.remove("Received_")
