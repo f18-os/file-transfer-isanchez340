@@ -6,8 +6,8 @@ import socket, sys, re, os
 sys.path.append("../lib")       # for params
 import params
 
-nofileerror = 0;
-switchesVarDefaults = (
+nofileerror = 0;    # error state variable
+switchesVarDefaults = (     # socket setup and connection stuff
     (('-l', '--listenPort') ,'listenPort', 50001),
     (('-?', '--usage'), "usage", False), # boolean (set if present)
     )
@@ -28,21 +28,21 @@ s.listen(1)              # allow only one outstanding request
 while True:
     conn, addr = s.accept()  # wait until incoming connection request (and accept it)
 
-    if not os.fork():
+    if not os.fork():   # fork for multiple connections
 
         print('Connected by', addr)
 
-        filename = conn.recv(1024).decode()
+        filename = conn.recv(1024).decode()     # receives file name
 
-        if os.path.isfile("Received_" + filename):
-            print("file is found in server, please rename file before sending")
+        if os.path.isfile("Received_" + filename):  # checks if file is in folder and handles the situation accordingly
+            print("file is found in server, please rename file before sending")     # renames file for error state
             filename = "nullerrorfilenotfound"
 
-        if filename == "nullerrorfilenotfound":
+        if filename == "nullerrorfilenotfound":     # error state handing
             nofileerror = 1
 
         f = open("Received_" + filename,'wb')
-        try:
+        try:    # recieves file and if diconnected prints message and exits
             file = conn.recv(1024)
             while file:
                 print("Receiving '%s'" % "Received_" + filename)
@@ -54,8 +54,12 @@ while True:
             conn.close()
             sys.exit(0)
 
-        print("Received '%s'" % filename)
+        print("Received '%s'" % filename)   # socket cleanup and error file removal if needed
         conn.shutdown(socket.SHUT_WR)
         conn.close()
         if nofileerror:
             os.remove("Received_nullerrorfilenotfound")
+        try:
+            os.remove("Received_")
+        except:
+            sys.exit(0)

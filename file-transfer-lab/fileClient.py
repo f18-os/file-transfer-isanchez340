@@ -5,7 +5,7 @@ import socket, sys, re
 sys.path.append("../lib")       # for params
 import params
 
-switchesVarDefaults = (
+switchesVarDefaults = (                                 # socket and connection setup before file transfer
     (('-s', '--server'), 'server', "127.0.0.1:50001"),
     (('-?', '--usage'), "usage", False), # boolean (set if present)
     )
@@ -49,9 +49,9 @@ if s is None:
     print('could not open socket')
     sys.exit(1)
 
-file = input("Enter file name ")
+file = input("Enter file name including extension eg. ""graceful.gif ")
 
-try:
+try:                # tries to open file and if not found send error name so the server handles the error
     outfile = open(file, 'rb')
 except:
     print("file not found")
@@ -60,7 +60,7 @@ except:
     s.close()
     sys.exit(0)
 
-try:
+try:                # trys to send file and if error occurs like disconnection, prints out message and exits program
     s.send(file.encode())
 
     sending = outfile.read(1024)
