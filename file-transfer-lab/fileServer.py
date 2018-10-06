@@ -25,25 +25,37 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.bind((listenAddr, listenPort))
 s.listen(1)              # allow only one outstanding request
 # s is a factory for connected sockets
+while True:
+    conn, addr = s.accept()  # wait until incoming connection request (and accept it)
 
-conn, addr = s.accept()  # wait until incoming connection request (and accept it)
-print('Connected by', addr)
-filename = conn.recv(1024).decode()
+    if not os.fork():
 
-if filename == "nullerrorfilenotfound":
-    nofileerror = 1
+        print('Connected by', addr)
 
-f = open("Received_" + filename,'wb')
+        filename = conn.recv(1024).decode()
 
-file = conn.recv(1024)
-while file:
-        print("Receiving '%s'" % filename)
-        f.write(file)
-        file = conn.recv(1024)
+        if os.path.isfile("Received_" + filename):
+            print("file is found in server, please rename file before sending")
+            filename = "nullerrorfilenotfound"
 
-print("Received '%s'" % filename)
-conn.shutdown(socket.SHUT_WR)
-conn.close()
-if nofileerror:
-    os.remove("Received_nullerrorfilenotfound")
-    os.remove("Received_")
+        if filename == "nullerrorfilenotfound":
+            nofileerror = 1
+
+        f = open("Received_" + filename,'wb')
+        try:
+            file = conn.recv(1024)
+            while file:
+                print("Receiving '%s'" % "Received_" + filename)
+                f.write(file)
+                file = conn.recv(1024)
+        except:
+            print("disconnected")
+            conn.shutdown(socket.SHUT_WR)
+            conn.close()
+            sys.exit(0)
+
+        print("Received '%s'" % filename)
+        conn.shutdown(socket.SHUT_WR)
+        conn.close()
+        if nofileerror:
+            os.remove("Received_nullerrorfilenotfound")

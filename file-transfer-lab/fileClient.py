@@ -60,14 +60,21 @@ except:
     s.close()
     sys.exit(0)
 
-s.send(file.encode())
+try:
+    s.send(file.encode())
 
-sending = outfile.read(1024)
-while len(sending):
-    print("sending '%s'" % file)
-    s.send(sending)
     sending = outfile.read(1024)
+    while len(sending):
+        print("sending '%s'" % file)
+        s.send(sending)
+        sending = outfile.read(1024)
+except:
+    print("Disconnected")
+    s.shutdown(socket.SHUT_WR)  # no more output
+    s.close()
+    sys.exit(0)
 
 print("sent '%s'" % file)
+
 s.shutdown(socket.SHUT_WR)  # no more output
 s.close()
