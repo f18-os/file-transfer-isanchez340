@@ -2,7 +2,7 @@
 
 # Echo server program
 
-import socket, sys, re, os
+import socket, sys, re, os, time
 from threading import Thread
 sys.path.append("../lib")       # for params
 import params
@@ -35,18 +35,11 @@ class ServerThread(Thread):
         self.start()
     def run(self):
         while True:
-            conn, addr = s.accept()  # wait until incoming connection request (and accept it)
-
-            print('Connected to', addr)
-
             filename = conn.recv(1024).decode()     # receives file name
-
             while os.path.isfile("Received_" + filename):  # checks if file is in folder and handles the situation accordingly
                 filename = "(1)" + filename    # renames file for error state
-
             if filename == "nullerrorfilenotfound":     # error state handing
                 nofileerror = 1
-
             f = open("Received_" + filename,'wb')
             try:    # recieves file and if diconnected prints message and exits
                 file = conn.recv(1024)
@@ -54,6 +47,10 @@ class ServerThread(Thread):
                     print("Receiving '%s'" % "Received_" + filename)
                     f.write(file)
                     file = conn.recv(1024)
+
+                requestNum = ServerThread.requestCount
+                time.sleep(0.001)
+                ServerThread.requestCount = requestNum + 1
             except:
                 print("disconnected")
                 conn.shutdown(socket.SHUT_WR)
@@ -69,3 +66,7 @@ class ServerThread(Thread):
                 os.remove("Received_")
             except:
                 sys.exit(0)
+
+while True:
+    conn, addr = s.accept()  # wait until incoming connection request (and accept it)
+    ServerThread(conn)
