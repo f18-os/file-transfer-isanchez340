@@ -2,7 +2,7 @@
 
 # Echo server program
 
-import socket, sys, re, os
+import socket, sys, re, os, threading
 sys.path.append("../lib")       # for params
 import params
 
@@ -30,13 +30,12 @@ while True:
 
     if not os.fork():   # fork for multiple connections
 
-        print('Connected by', addr)
+        print('Connected to', addr)
 
         filename = conn.recv(1024).decode()     # receives file name
 
-        if os.path.isfile("Received_" + filename):  # checks if file is in folder and handles the situation accordingly
-            print("file is found in server, please rename file before sending")     # renames file for error state
-            filename = "nullerrorfilenotfound"
+        while os.path.isfile("Received_" + filename):  # checks if file is in folder and handles the situation accordingly
+            filename = "(1)" + filename    # renames file for error state
 
         if filename == "nullerrorfilenotfound":     # error state handing
             nofileerror = 1
